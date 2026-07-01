@@ -15,7 +15,7 @@ inline uint8_t ExpectedPatternByte(uint64_t offset)
 }
 } // namespace full_buffer
 
-void FullBufferFillPattern(uint32_t blockDim, void *stream, uint8_t *devPtr, uint64_t size);
-void FullBufferCheckPattern(uint32_t blockDim, void *stream, uint8_t *devPtr, uint64_t size, uint64_t *result);
+void FullBufferFillPattern(uint32_t blockDim, void *stream, void *devPtr, uint64_t size);
+void FullBufferCheckPattern(uint32_t blockDim, void *stream, void *devPtr, uint64_t size, void *result);
 
 #endif // FULL_BUFFER_KERNELS_H

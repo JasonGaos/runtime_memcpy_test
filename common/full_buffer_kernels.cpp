@@ -1,21 +1,23 @@
 #include "kernel_operator.h"
 #include "full_buffer_kernels.h"
 
-extern "C" __global__ __aicore__ void DeviceFullBufferFill(__gm__ uint8_t *devPtr, uint64_t size)
+extern "C" __global__ __aicore__ void DeviceFullBufferFill(GM_ADDR devAddr, uint64_t size)
 {
+    __gm__ uint8_t *devPtr = (__gm__ uint8_t *)devAddr;
     for (uint64_t offset = 0ULL; offset < size; ++offset) {
         devPtr[offset] = FULL_BUFFER_PATTERN_BYTE(offset);
     }
 }
 
-void FullBufferFillPattern(uint32_t blockDim, void *stream, uint8_t *devPtr, uint64_t size)
+void FullBufferFillPattern(uint32_t blockDim, void *stream, void *devPtr, uint64_t size)
 {
     DeviceFullBufferFill<<<blockDim, nullptr, stream>>>(devPtr, size);
 }
 
-extern "C" __global__ __aicore__ void DeviceFullBufferCheck(__gm__ uint8_t *devPtr, uint64_t size,
-    __gm__ uint64_t *result)
+extern "C" __global__ __aicore__ void DeviceFullBufferCheck(GM_ADDR devAddr, uint64_t size, GM_ADDR resultAddr)
 {
+    __gm__ uint8_t *devPtr = (__gm__ uint8_t *)devAddr;
+    __gm__ uint64_t *result = (__gm__ uint64_t *)resultAddr;
     uint64_t mismatchCount = 0ULL;
     uint64_t firstOffset = 0ULL;
     uint64_t firstExpected = 0ULL;
@@ -40,7 +42,7 @@ extern "C" __global__ __aicore__ void DeviceFullBufferCheck(__gm__ uint8_t *devP
     result[3] = firstActual;
 }
 
-void FullBufferCheckPattern(uint32_t blockDim, void *stream, uint8_t *devPtr, uint64_t size, uint64_t *result)
+void FullBufferCheckPattern(uint32_t blockDim, void *stream, void *devPtr, uint64_t size, void *result)
 {
     DeviceFullBufferCheck<<<blockDim, nullptr, stream>>>(devPtr, size, result);
 }
