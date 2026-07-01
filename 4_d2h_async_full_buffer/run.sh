@@ -17,17 +17,8 @@ fi
 
 source "${ASCEND_CANN_PATH}/bin/setenv.bash"
 
-if [[ -z "${SOC_VERSION:-}" ]]; then
-    echo "[ERROR] SOC_VERSION is not set."
-    exit 1
-fi
-
-if [[ -z "${ASCENDC_CMAKE_DIR:-}" || ! -f "${ASCENDC_CMAKE_DIR}/ascendc.cmake" ]]; then
-    echo "[ERROR] ASCENDC_CMAKE_DIR is not set or ascendc.cmake is missing."
-    exit 1
-fi
-
 cd "${SCRIPT_DIR}"
+rm -rf build
 cmake -B build -DASCEND_CANN_PACKAGE_PATH="${ASCEND_CANN_PATH}"
 cmake --build build -j
 ./build/main

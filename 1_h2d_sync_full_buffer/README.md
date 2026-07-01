@@ -2,14 +2,12 @@
 
 同步 Host-to-Device 全 buffer 逐字节校验测试。
 
-本测试会为每个测试尺寸生成确定性 Host 字节模式，通过 `aclrtMemcpy` 拷贝到 Device，再启动 Device 侧校验 kernel 逐字节检查 Device buffer 内容。
+本测试会为每个测试尺寸生成确定性 Host 字节模式，通过 `aclrtMemcpy` 拷贝到 Device，再把 Device buffer 读回另一个 Host buffer，并在 Host 侧逐字节校验完整内容。
 
 ## 运行
 
 ```bash
 source ${install_root}/cann/set_env.sh
-export SOC_VERSION=${soc_version}
-export ASCENDC_CMAKE_DIR=${install_root}/cann/${arch}-linux/tikcpp/ascendc_kernel_cmake
 bash run.sh
 ```
 

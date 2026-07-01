@@ -11,29 +11,37 @@ bool RunOneSize(size_t size, aclrtStream stream)
 {
     bool ok = true;
     bool cleanupOk = true;
-    uint8_t *hostPtr = nullptr;
+    uint8_t *hostSrc = nullptr;
+    uint8_t *hostDst = nullptr;
     uint8_t *devPtr = nullptr;
 
     std::printf("[INFO] %s size=%zu start\n", kTestName, size);
-    FB_CHECK_ACL(aclrtMallocHost(reinterpret_cast<void **>(&hostPtr), size));
+    FB_CHECK_ACL(aclrtMallocHost(reinterpret_cast<void **>(&hostSrc), size));
+    FB_CHECK_ACL(aclrtMallocHost(reinterpret_cast<void **>(&hostDst), size));
     FB_CHECK_ACL(aclrtMalloc(reinterpret_cast<void **>(&devPtr), size, ACL_MEM_MALLOC_HUGE_FIRST));
+    FB_CHECK_ACL(aclrtMemset(devPtr, size, full_buffer::kDevicePoisonByte, size));
 
     if (ok) {
-        FullBufferFillPattern(full_buffer::kKernelBlockDim, stream, devPtr, static_cast<uint64_t>(size));
+        full_buffer::FillHostPattern(hostSrc, size);
+        full_buffer::FillHostInversePattern(hostDst, size);
     }
-    FB_CHECK_ACL(aclrtMemcpyAsync(hostPtr, size, devPtr, size, ACL_MEMCPY_DEVICE_TO_HOST, stream));
+    FB_CHECK_ACL(aclrtMemcpy(devPtr, size, hostSrc, size, ACL_MEMCPY_HOST_TO_DEVICE));
+    FB_CHECK_ACL(aclrtMemcpyAsync(hostDst, size, devPtr, size, ACL_MEMCPY_DEVICE_TO_HOST, stream));
     FB_CHECK_ACL(aclrtSynchronizeStream(stream));
 
     if (ok) {
         ok = full_buffer::ReportHostVerifyResult(kTestName, size,
-            full_buffer::VerifyHostPattern(hostPtr, size));
+            full_buffer::VerifyHostPattern(hostDst, size));
     }
 
     if (devPtr != nullptr) {
         FB_CLEANUP_ACL(aclrtFree(devPtr));
     }
-    if (hostPtr != nullptr) {
-        FB_CLEANUP_ACL(aclrtFreeHost(hostPtr));
+    if (hostDst != nullptr) {
+        FB_CLEANUP_ACL(aclrtFreeHost(hostDst));
+    }
+    if (hostSrc != nullptr) {
+        FB_CLEANUP_ACL(aclrtFreeHost(hostSrc));
     }
     return ok && cleanupOk;
 }

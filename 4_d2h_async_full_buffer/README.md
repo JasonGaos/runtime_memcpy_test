@@ -2,14 +2,12 @@
 
 异步 Device-to-Host 全 buffer 逐字节校验测试。
 
-本测试先在同一 Stream 上启动 Device 侧填充 kernel，再通过 `aclrtMemcpyAsync` 拷贝回 Host。`aclrtSynchronizeStream` 返回后在 Host 侧逐字节校验完整 buffer。
+本测试先在 Host 侧生成确定性字节模式，通过 H2D 同步拷贝预置 Device buffer，再通过 `aclrtMemcpyAsync` 在 Stream 上执行待测 D2H 拷贝。`aclrtSynchronizeStream` 返回后在 Host 侧逐字节校验完整 buffer。
 
 ## 运行
 
 ```bash
 source ${install_root}/cann/set_env.sh
-export SOC_VERSION=${soc_version}
-export ASCENDC_CMAKE_DIR=${install_root}/cann/${arch}-linux/tikcpp/ascendc_kernel_cmake
 bash run.sh
 ```
 
